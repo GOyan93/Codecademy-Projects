@@ -22,7 +22,7 @@ class Pokemon:
     self.max_hp = max_hp
     self.current_hp = int(self.max_hp * (self.level * 0.25))
     self.has_fainted = False
-    self.attack_range = [(int(i *(self.level * 0.25))) for i in attack_range]
+    self.attack_range = [(int(i *(self.level * 0.15))) for i in attack_range]
 
   def __repr__(self):
     return (f'{self.name}, Level: {self.level}, Type: {self.pkm_type}, HP: {self.current_hp}, Attack: {self.attack_range}')
@@ -30,7 +30,7 @@ class Pokemon:
   def lose_health(self, health_loss):
     self.current_hp -= health_loss
     print(f'{self.name} lost {health_loss}HP.\n{self.name} has {self.current_hp}HP left.')
-    if self.current_hp == 0:
+    if self.current_hp < 1:
       print(f'{self.name} has fainted.')
       self.has_fainted = True
     return self.current_hp
@@ -52,9 +52,10 @@ class Pokemon:
       return 0.5
 
   def attack(self, other_pkm):
-    print(f'{self.name} has attacked {other_pkm.name}!')
-    attack_power = int(random.randint(self.attack_range[0], self.attack_range[1]) * self.type_mult(other_pkm))
-    other_pkm.lose_health(attack_power)
+    if self.has_fainted != True:
+      print(f'{self.name} has attacked {other_pkm.name}!')
+      attack_power = int(random.randint(self.attack_range[0], self.attack_range[1]) * self.type_mult(other_pkm))
+      other_pkm.lose_health(attack_power)
     
 
   def display(self):
@@ -100,19 +101,19 @@ class Trainer:
 
 
 # Pokemon Instances
-bulbasaur = Pokemon('Bulbasaur', 1, 'grass', 50, (5, 10))
-charmander = Pokemon('Charmander', 1, 'fire', 30, (9, 15))
-squirtle = Pokemon('Squirtle', 1, 'water', 40, (7, 12))
+bulbasaur = Pokemon('Bulbasaur', random.randint(1, 10), 'grass', 50, (5, 10))
+charmander = Pokemon('Charmander', random.randint(1, 10), 'fire', 30, (9, 15))
+squirtle = Pokemon('Squirtle', random.randint(1, 10), 'water', 40, (7, 12))
 
 
 
 # Main Game Loop
-bulbasaur.attack(charmander)
-charmander.attack(bulbasaur)
-bulbasaur.attack(charmander)
-charmander.attack(bulbasaur)
-bulbasaur.attack(charmander)
-charmander.attack(bulbasaur)
+bulbasaur.display()
+charmander.display()
+while bulbasaur.has_fainted == False and charmander.has_fainted == False:
+  bulbasaur.attack(charmander)
+  charmander.attack(bulbasaur)
+ 
 
 print(bulbasaur)
 print(charmander)
