@@ -70,9 +70,11 @@ class Trainer:
     self.active_pkm = active_pkm # 1-6
 
   def add_pkm(self, pkm):
-    if self.num_of_pkballs < 6:
+    if self.num_of_pkballs < 3:
       self.pkm_balls.append(pkm)
       print(f'{pkm.name} has been added to your collection')
+    else:
+      print("You cannot add anymore pokemon!")
       
     else:
       print('You already have 6 pokemon. You cannot add any more.')
@@ -87,8 +89,9 @@ class Trainer:
     pass
 
   def switch_pkm(self, other_pkm):
-    # Will change the index of the pkm_balls
-    pass
+    choice = int("Choose your pokemon (1-3):/n")
+    self.active_pk = self.pkm_balls[choice+1]
+    print(f"{self.active_pk.name} I choose you!")
 
   def run_away(self):
     trainer_input = input("Are you sure you want to run? (Yes or No)")
