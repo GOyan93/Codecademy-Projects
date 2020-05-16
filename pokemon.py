@@ -19,17 +19,25 @@ class pokemon:
     self.current_hp = current_hp
     self.faint = faint
 
-  def lose_health(self):
-    pass
+  def lose_health(self, health_loss):
+    self.current_hp -= health_loss
+    print(f'{self.name} lost {health_loss}HP.\n{self.name} has {self.current_hp}HP left.')
+    self.has_fainted()
+    return self.current_hp
 
-  def gain_health(self):
-    pass
+  def gain_health(self, health_gain):
+    self.current_hp += health_gain
+    print(f'{self.name} gained {health_gain}HP.\n{self.name} has {self.current_hp}HP.')
 
   def has_fainted(self):
-    pass
+    if self.current_hp == 0:
+      print(f'{self.name} has fainted.')
+      return True
+    return False
 
   def revive(self):
-    pass
+    self.current_hp = self.max_hp / 2
+    print(f'{self.name} has been revived!\n{self.name} has {self.current_hp}.')
 
   def attack(self, other_pokemon):
     pass
