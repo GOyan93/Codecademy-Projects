@@ -14,15 +14,18 @@ import random
 
   
 
-class pokemon:
+class Pokemon:
   def __init__(self, name, level, pkm_type, max_hp, attack_range):
     self.name = name
     self.level = level
     self.pkm_type = pkm_type
     self.max_hp = max_hp
-    self.current_hp = self.max_hp * (self.level * 0.25)
+    self.current_hp = int(self.max_hp * (self.level * 0.25))
     self.has_fainted = False
-    self.attack_range = attack_range * (self.level * 0.25)
+    self.attack_range = [(int(i *(self.level * 0.25))) for i in attack_range]
+
+  def __repr__(self):
+    return (f'{self.name}, Level: {self.level}, Type: {self.pkm_type}, HP: {self.current_hp}, Attack: {self.attack_range}')
 
   def lose_health(self, health_loss):
     self.current_hp -= health_loss
@@ -41,25 +44,28 @@ class pokemon:
     print(f'{self.name} has been revived!\n{self.name} has {self.current_hp}.')
 
   def type_mult(self, other):
-  if (pkm_type == 'fire' and other.pkm_type == 'grass') or (self.pkm_type == 'water' and other.pkm_type == 'fire') or (self.pkm_type == 'grass' and other.pkm_type == 'water'):
-    type_mult = 2
-  if (pkm_type == 'grass' and other.pkm_type == 'fire') or (self.pkm_type == 'fire' and other.pkm_type == 'water') or (self.pkm_type == 'water' and other.pkm_type == 'grass'):
-    type_mult = 0.5
+    if (self.pkm_type == 'fire' and other.pkm_type == 'grass') or (self.pkm_type == 'water' and other.pkm_type == 'fire') or (self.pkm_type == 'grass' and other.pkm_type == 'water'):
+      print("It's super effective!")
+      return 2
+    if (self.pkm_type == 'grass' and other.pkm_type == 'fire') or (self.pkm_type == 'fire' and other.pkm_type == 'water') or (self.pkm_type == 'water' and other.pkm_type == 'grass'):
+      print("It's not very effective!")
+      return 0.5
 
   def attack(self, other_pkm):
-    attack_power = randint(attack_range) * type_mult(other_pkm)
-    print(f'{self.name} has attacked {other_pkm}!')
+    print(f'{self.name} has attacked {other_pkm.name}!')
+    attack_power = int(random.randint(self.attack_range[0], self.attack_range[1]) * self.type_mult(other_pkm))
     other_pkm.lose_health(attack_power)
     
 
-
+  def display(self):
+    print(f'{self.name}, Health: {self.current_hp}')
 
 
 class Trainer:
-  def __init__(self, name, num_of_pkballs = 1, active_pkm = 1):
-    self.name = name
-    self.num_of_pkballs = num_of_pkballs # max 6
+  def __init__(self, name):
+    self.name = name 
     self.pkm_balls = []
+    self.num_of_pkballs = len(self.pkm_balls)
     self.active_pkm = active_pkm # 1-6
 
   def add_pkm(self, pkm):
@@ -75,7 +81,8 @@ class Trainer:
     print(f'You have given {pkm.name} a potion!')
 
   def attack(self, other_pkm):
-    # Will call the current pkm class attack method.
+    self.active_pkm.attack(other_pkm)
+    # This needs some editing?
     pass
 
   def switch_pkm(self, other_pkm):
@@ -90,4 +97,24 @@ class Trainer:
     else:
       return None
     
+
+
+# Pokemon Instances
+bulbasaur = Pokemon('Bulbasaur', 1, 'grass', 50, (5, 10))
+charmander = Pokemon('Charmander', 1, 'fire', 30, (9, 15))
+squirtle = Pokemon('Squirtle', 1, 'water', 40, (7, 12))
+
+
+
+# Main Game Loop
+bulbasaur.attack(charmander)
+charmander.attack(bulbasaur)
+bulbasaur.attack(charmander)
+charmander.attack(bulbasaur)
+bulbasaur.attack(charmander)
+charmander.attack(bulbasaur)
+
+print(bulbasaur)
+print(charmander)
+          
 
