@@ -11,47 +11,46 @@ Description: This is a program that uses OOP to simulate the basic battle struct
 """
 import random
 
-def type_mult(pkm_type, other_pkm_type):
-  if (pkm_type == 'fire' and other_pkm_type == 'grass') or (self.pkm_type == 'water' and other_pkm.pkm_type == 'fire') or (self.pkm_type == 'grass' and other_pkm.pkm_type == 'water'):
-    type_mult = 2
-  if (pkm_type == 'grass' and other_pkm_type == 'fire') or (self.pkm_type == 'fire' and other_pkm.pkm_type == 'water') or (self.pkm_type == 'water' and other_pkm.pkm_type == 'grass'):
-    type_mult = 0.5
+
   
 
 class pokemon:
-  def __init__(self, name, level, pkm_type, max_hp, base_hp, faint = False, attack_range):
+  def __init__(self, name, level, pkm_type, max_hp, attack_range):
     self.name = name
     self.level = level
     self.pkm_type = pkm_type
     self.max_hp = max_hp
-    self.base_hp = base_hp
-    self.current_hp = self.base_hp * (self.level * 0.25)
-    self.faint = faint
+    self.current_hp = self.max_hp * (self.level * 0.25)
+    self.has_fainted = False
     self.attack_range = attack_range * (self.level * 0.25)
 
   def lose_health(self, health_loss):
     self.current_hp -= health_loss
     print(f'{self.name} lost {health_loss}HP.\n{self.name} has {self.current_hp}HP left.')
-    self.has_fainted()
+    if self.current_hp == 0:
+      print(f'{self.name} has fainted.')
+      self.has_fainted = True
     return self.current_hp
 
   def gain_health(self, health_gain):
     self.current_hp += health_gain
     print(f'{self.name} gained {health_gain}HP.\n{self.name} has {self.current_hp}HP.')
 
-  def has_fainted(self):
-    if self.current_hp == 0:
-      print(f'{self.name} has fainted.')
-      return True
-    return False
-
   def revive(self):
     self.current_hp = self.max_hp / 2
     print(f'{self.name} has been revived!\n{self.name} has {self.current_hp}.')
 
+  def type_mult(self, other):
+  if (pkm_type == 'fire' and other.pkm_type == 'grass') or (self.pkm_type == 'water' and other.pkm_type == 'fire') or (self.pkm_type == 'grass' and other.pkm_type == 'water'):
+    type_mult = 2
+  if (pkm_type == 'grass' and other.pkm_type == 'fire') or (self.pkm_type == 'fire' and other.pkm_type == 'water') or (self.pkm_type == 'water' and other.pkm_type == 'grass'):
+    type_mult = 0.5
+
   def attack(self, other_pkm):
-    attack_power = randint(attack_range) * type_mult(self.pkm_type, other_pkm.pkm_type)
+    attack_power = randint(attack_range) * type_mult(other_pkm)
+    print(f'{self.name} has attacked {other_pkm}!')
     other_pkm.lose_health(attack_power)
+    
 
 
 
@@ -82,4 +81,13 @@ class Trainer:
   def switch_pkm(self, other_pkm):
     # Will change the index of the pkm_balls
     pass
+
+  def run_away(self):
+    trainer_input = input("Are you sure you want to run? (Yes or No)")
+    if 'y' in trainer_input.lower():
+      print('You have successfully run away')
+      #replay function
+    else:
+      return None
+    
 
