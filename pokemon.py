@@ -9,15 +9,25 @@ Description: This is a program that uses OOP to simulate the basic battle struct
 
 
 """
+import random
+
+def type_mult(pkm_type, other_pkm_type):
+  if (pkm_type == 'fire' and other_pkm_type == 'grass') or (self.pkm_type == 'water' and other_pkm.pkm_type == 'fire') or (self.pkm_type == 'grass' and other_pkm.pkm_type == 'water'):
+    type_mult = 2
+  if (pkm_type == 'grass' and other_pkm_type == 'fire') or (self.pkm_type == 'fire' and other_pkm.pkm_type == 'water') or (self.pkm_type == 'water' and other_pkm.pkm_type == 'grass'):
+    type_mult = 0.5
+  
 
 class pokemon:
-  def __init__(self, name, level, element, max_hp, current_hp, faint = False):
+  def __init__(self, name, level, pkm_type, max_hp, base_hp, faint = False, attack_range):
     self.name = name
     self.level = level
-    self.element = element
+    self.pkm_type = pkm_type
     self.max_hp = max_hp
-    self.current_hp = current_hp
+    self.base_hp = base_hp
+    self.current_hp = self.base_hp * (self.level * 0.25)
     self.faint = faint
+    self.attack_range = attack_range * (self.level * 0.25)
 
   def lose_health(self, health_loss):
     self.current_hp -= health_loss
@@ -39,21 +49,37 @@ class pokemon:
     self.current_hp = self.max_hp / 2
     print(f'{self.name} has been revived!\n{self.name} has {self.current_hp}.')
 
-  def attack(self, other_pokemon):
-    pass
+  def attack(self, other_pkm):
+    attack_power = randint(attack_range) * type_mult(self.pkm_type, other_pkm.pkm_type)
+    other_pkm.lose_health(attack_power)
+
+
+
 
 class Trainer:
-  def __init__(self, name, num_of_pkm = 1, active_pkm = 1):
+  def __init__(self, name, num_of_pkballs = 1, active_pkm = 1):
     self.name = name
-    self.num_of_pkm = num_of_pkm # max 6
+    self.num_of_pkballs = num_of_pkballs # max 6
+    self.pkm_balls = []
     self.active_pkm = active_pkm # 1-6
 
-  def use_potion(self):
-    pass
+  def add_pkm(self, pkm):
+    if self.num_of_pkballs < 6:
+      self.pkm_balls.append(pkm)
+      print(f'{pkm.name} has been added to your collection')
+      
+    else:
+      print('You already have 6 pokemon. You cannot add any more.')
+    
+  def use_potion(self, pkm):
+    pkm.gain_health(15)
+    print(f'You have given {pkm.name} a potion!')
 
-  def attack(self):
+  def attack(self, other_pkm):
+    # Will call the current pkm class attack method.
     pass
 
   def switch_pkm(self, other_pkm):
+    # Will change the index of the pkm_balls
     pass
 
