@@ -38,6 +38,7 @@ class Pokemon:
     self.current_hp = int(self.max_hp * (self.level * 0.25))
     self.has_fainted = False
     self.attack_range = [(int(i *(self.level * 0.15))) for i in attack_range]
+    
 
   def __repr__(self):
     return (f'{self.name}, Level: {self.level}, Type: {self.pkm_type}, HP: {self.current_hp}, Attack: {self.attack_range}')
@@ -53,10 +54,12 @@ class Pokemon:
   def gain_health(self, health_gain):
     self.current_hp += health_gain
     print(f'{self.name} gained {health_gain}HP.\n{self.name} has {self.current_hp}HP.')
+    turn += 1
 
   def revive(self):
     self.current_hp = self.max_hp / 2
     print(f'{self.name} has been revived!\n{self.name} has {self.current_hp}.')
+    turn += 1
 
   def type_mult(self, other):
     if (self.pkm_type == 'fire' and other.pkm_type == 'grass') or (self.pkm_type == 'water' and other.pkm_type == 'fire') or (self.pkm_type == 'grass' and other.pkm_type == 'water'):
@@ -71,7 +74,8 @@ class Pokemon:
       print(f'{self.name} has attacked {other_pkm.name}!')
       attack_power = int(random.randint(self.attack_range[0], self.attack_range[1]) * self.type_mult(other_pkm))
       other_pkm.lose_health(attack_power)
-
+      turn += 1
+      
   def display(self):
     print(f'{self.name}, Health: {self.current_hp}')
 
@@ -84,6 +88,7 @@ class Trainer:
     self.active_pkm = None
     self.potions = 3
     self.revives = 1
+    self.fainted_pkm = []
     
   def add_pkm(self, pkm):
     if self.num_of_pkballs < 1:
@@ -101,6 +106,10 @@ class Trainer:
     print('You do not have any potions left')
 
   def use_revive(self, pkm):
+    # Display list of fainted pokemon
+    # Remove pokemon from fainted list, append to active list
+    # Restore 1/2 health, changed fainted status
+    # Lower revive count
     if self.revives > 0 and pkm.current_health <= 0:
       self.pkm.gain_health(self.pkm.max_health * 0.5)
       self.revives -= 1
@@ -108,12 +117,19 @@ class Trainer:
     print('You do not have any revives left')
 
   def attack(self, other_pkm):
+    if self.active_pkm.has_fainted == True:
+      print('Your pokemon has fainted.')
+      self.switch_pkm()
     self.active_pkm.attack(other_pkm)
 
   def switch_pkm(self):
     choice = input("Choose your pokemon (1-3):\n")
+    if self.active_pkm.has_fainted == True:
+      self.fainted_pkm.append(self.active_pkm)
     self.active_pkm = self.pkm_balls[int(choice)-1]
     print(f"{self.active_pkm.name} I choose you!")
+    turn += 1
+    
     
 
   def run_away(self):
@@ -137,9 +153,58 @@ pokemon_list = [bulbasaur, charmander, squirtle]
 
 
 
-# Main Game Loop
+# Game Sequence
+
+# Get player name / instantiate Trainers
+player1_name = input()
+player2_name = input()
+player1 = Trainer(player1_name)
+player2 = Trainer(player2_name)
+# Present pokemon choices
+print('Choose your pokemon! (numerical choice)')
+for i in range(len(player2.pkm_balls)):
+  if i < 1:
+    print(pokemon_list)
+    pkm_idx = input()
+    player1.add_pkm(pokemon_list[pkm_idx])
+    print(pokemon_list)
+    pkm_idx = input()
+    player2.add_pkm(pokemon_list[pkm_idx])
+print('Lets Battle!')
+# Ask which pokemon to battle
+print('Choose your pokemon to battle')
+print(player1.pkm_balls)
+pkm_index = input()
+player1.switch_pkm(pkm_index)
+pkm_index = input()
+player2.switch_pkm(pkm_index)
+# Start Main Game Loop
+turn = 1
+while (len(player1.pkm_balls) != 0 or player1.revives != 0 )and (len(player2.pkm_balls) != 0 or player2.revives != 0):
+  if turn % 2 != 0: 
+  print('Player 1: Choose your action.\nAttack, Switch, Use Potion, Use Revive, Run\n')
+  choice = input()
+  if 'attack' in choice.lower():
+    player1.attack(player2.active_pkm)
+  if 'switch' in choice.lower():
+    player1.switch_pkm()
+  if 'potion' in choice.lower():
+    player1.use_potion()
+  if 'revive' in choice.lower():
+    player1.use_revive()
+  if 'run' in choice.lower():
+    player1.run_away()
+  
+        
 
 
+
+
+
+
+
+
+# Test
 bulbasaur.display()
 squirtle.display()
 while bulbasaur.has_fainted == False and squirtle.has_fainted == False:
