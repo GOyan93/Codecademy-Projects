@@ -111,8 +111,6 @@ class Trainer:
     self.active_pkm.attack(other_pkm)
 
   def switch_pkm(self):
-    for pkm in self.pkm_balls:
-      if pkm.has_fainted == False:
     choice = input("Choose your pokemon (1-3):\n")
     self.active_pkm = self.pkm_balls[int(choice)-1]
     print(f"{self.active_pkm.name} I choose you!")
