@@ -30,6 +30,8 @@ import random, sys, time
   
 
 class Pokemon:
+  global turn
+  
   def __init__(self, name, level, pkm_type, max_hp, attack_range):
     self.name = name
     self.level = level
@@ -81,6 +83,8 @@ class Pokemon:
 
 
 class Trainer:
+  global turn
+  
   def __init__(self, name):
     self.name = name 
     self.pkm_balls = []
@@ -91,7 +95,7 @@ class Trainer:
     self.fainted_pkm = []
     
   def add_pkm(self, pkm):
-    if self.num_of_pkballs < 1:
+    if self.num_of_pkballs < 2:
       self.pkm_balls.append(pkm)
       print(f'{pkm.name} has been added to your collection')
     else:
@@ -102,7 +106,7 @@ class Trainer:
       print(f'You have given {pkm.name} a potion!')
       self.active_pkm.gain_health(15)
       self.potions -= 1
-      Turn += 1 
+      turn += 1 
     print('You do not have any potions left')
 
   def use_revive(self, pkm):
@@ -123,12 +127,13 @@ class Trainer:
     self.active_pkm.attack(other_pkm)
 
   def switch_pkm(self):
+    print(self.pkm_balls)
     choice = input("Choose your pokemon (1-3):\n")
-    if self.active_pkm.has_fainted == True:
-      self.fainted_pkm.append(self.active_pkm)
+    if self.active_pkm != None:
+      if self.active_pkm.has_fainted == True:
+        self.fainted_pkm.append(self.active_pkm)
     self.active_pkm = self.pkm_balls[int(choice)-1]
     print(f"{self.active_pkm.name} I choose you!")
-    turn += 1
     
     
 
@@ -142,59 +147,78 @@ class Trainer:
       return None
     
   def display_pokeballs(self):
-    #displays list of pokemon if 
+    pass
+    #displays list of pokemon
+
+
+# Game Function
+def game_function():
+  if turn % 2 != 0:
+    player = player1
+  else:
+    player = player2
+  
+  print(f'{player.name}: Choose your action.\nAttack, Switch, Use Potion, Use Revive, Run')
+  choice = input()
+  if 'attack' in choice.lower():
+    player.attack(player.active_pkm)
+  if 'switch' in choice.lower():
+    player.switch_pkm()
+  if 'potion' in choice.lower():
+    player.use_potion()
+  if 'revive' in choice.lower():
+    player.use_revive()
+  if 'run' in choice.lower():
+    player.run_away()
+    
+
+
+
 
 # Pokemon Instances
+pokemon_list = []
 bulbasaur = Pokemon('Bulbasaur', random.randint(5, 10), 'grass', 50, (5, 10))
+pokemon_list.append(bulbasaur)
 charmander = Pokemon('Charmander', random.randint(5, 10), 'fire', 30, (9, 15))
+pokemon_list.append(charmander)
 squirtle = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
-
-pokemon_list = [bulbasaur, charmander, squirtle]
-
+pokemon_list.append(squirtle)
 
 
-# Game Sequence
+
+
+
+##### Game Sequence #####
 
 # Get player name / instantiate Trainers
+turn = 1
+print('Player 1: What is your name?')
 player1_name = input()
+print('Player 2: What is your name?')
 player2_name = input()
 player1 = Trainer(player1_name)
 player2 = Trainer(player2_name)
 # Present pokemon choices
 print('Choose your pokemon! (numerical choice)')
-for i in range(len(player2.pkm_balls)):
-  if i < 1:
-    print(pokemon_list)
-    pkm_idx = input()
-    player1.add_pkm(pokemon_list[pkm_idx])
-    print(pokemon_list)
-    pkm_idx = input()
-    player2.add_pkm(pokemon_list[pkm_idx])
+for i in range(len(pokemon_list)):
+    num = i+1
+    print(f'{num}: {pokemon_list[i]}\n')
+pkm_idx = int(input())
+player1.add_pkm(pokemon_list[pkm_idx-1])
+for i in range(len(pokemon_list)):
+    num = i+1
+    print(f'{num}: {pokemon_list[i]}\n')
+pkm_idx = int(input())
+player2.add_pkm(pokemon_list[pkm_idx-1])
 print('Lets Battle!')
 # Ask which pokemon to battle
 print('Choose your pokemon to battle')
-print(player1.pkm_balls)
-pkm_index = input()
-player1.switch_pkm(pkm_index)
-pkm_index = input()
-player2.switch_pkm(pkm_index)
+player1.switch_pkm()
+player2.switch_pkm()
 # Start Main Game Loop
-turn = 1
-while (len(player1.pkm_balls) != 0 or player1.revives != 0 )and (len(player2.pkm_balls) != 0 or player2.revives != 0):
-  if turn % 2 != 0: 
-  print('Player 1: Choose your action.\nAttack, Switch, Use Potion, Use Revive, Run\n')
-  choice = input()
-  if 'attack' in choice.lower():
-    player1.attack(player2.active_pkm)
-  if 'switch' in choice.lower():
-    player1.switch_pkm()
-  if 'potion' in choice.lower():
-    player1.use_potion()
-  if 'revive' in choice.lower():
-    player1.use_revive()
-  if 'run' in choice.lower():
-    player1.run_away()
-  
+
+while (len(player1.pkm_balls) != 1 or player1.revives != 0 )and (len(player2.pkm_balls) != 1 or player2.revives != 0):
+  game_function()
         
 
 
