@@ -47,39 +47,42 @@ class Pokemon:
 
   def lose_health(self, health_loss):
     self.current_hp -= health_loss
-    print(f'{self.name} lost {health_loss}HP.\n{self.name} has {self.current_hp}HP left.')
+    print(f'{self.name} lost {health_loss}HP.\n{self.name} has {self.current_hp}HP left.\n')
     if self.current_hp < 1:
       print(f'{self.name} has fainted.')
       self.has_fainted = True
     return self.current_hp
 
   def gain_health(self, health_gain):
+    global turn
     self.current_hp += health_gain
-    print(f'{self.name} gained {health_gain}HP.\n{self.name} has {self.current_hp}HP.')
+    print(f'{self.name} gained {health_gain}HP.\n{self.name} has {self.current_hp}HP.\n')
     turn += 1
 
   def revive(self):
+    global turn
     self.current_hp = self.max_hp / 2
-    print(f'{self.name} has been revived!\n{self.name} has {self.current_hp}.')
+    print(f'{self.name} has been revived!\n{self.name} has {self.current_hp}.\n')
     turn += 1
 
   def type_mult(self, other):
     if (self.pkm_type == 'fire' and other.pkm_type == 'grass') or (self.pkm_type == 'water' and other.pkm_type == 'fire') or (self.pkm_type == 'grass' and other.pkm_type == 'water'):
-      print("It's super effective!")
+      print("It's super effective!\n")
       return 2
     if (self.pkm_type == 'grass' and other.pkm_type == 'fire') or (self.pkm_type == 'fire' and other.pkm_type == 'water') or (self.pkm_type == 'water' and other.pkm_type == 'grass'):
-      print("It's not very effective!")
+      print("It's not very effective!\n")
       return 0.5
 
   def attack(self, other_pkm):
+    global turn
     if self.has_fainted != True:
-      print(f'{self.name} has attacked {other_pkm.name}!')
+      print(f'{self.name} has attacked {other_pkm.name}!\n')
       attack_power = int(random.randint(self.attack_range[0], self.attack_range[1]) * self.type_mult(other_pkm))
       other_pkm.lose_health(attack_power)
       turn += 1
       
   def display(self):
-    print(f'{self.name}, Health: {self.current_hp}')
+    print(f'{self.name}, Health: {self.current_hp}\n')
 
 
 class Trainer:
@@ -97,19 +100,20 @@ class Trainer:
   def add_pkm(self, pkm):
     if self.num_of_pkballs < 2:
       self.pkm_balls.append(pkm)
-      print(f'{pkm.name} has been added to your collection')
+      print(f'{pkm.name} has been added to your collection.\n')
     else:
       print("You cannot add anymore pokemon!")
     
   def use_potion(self):
+    global turn
     if self.potions > 0:
-      print(f'You have given {pkm.name} a potion!')
+      print(f'You have given {self.active_pkm.name} a potion!\n')
       self.active_pkm.gain_health(15)
       self.potions -= 1
       turn += 1 
-    print('You do not have any potions left')
+    print('You do not have any potions left.\n')
 
-  def use_revive(self, pkm):
+  def use_revive(self):
     # Display list of fainted pokemon
     # Remove pokemon from fainted list, append to active list
     # Restore 1/2 health, changed fainted status
@@ -117,23 +121,25 @@ class Trainer:
     if self.revives > 0 and pkm.current_health <= 0:
       self.pkm.gain_health(self.pkm.max_health * 0.5)
       self.revives -= 1
-      print(f'You have revived {pkm.name}!')
-    print('You do not have any revives left')
+      print(f'You have revived {pkm.name}!\n')
+    print('You do not have any revives left\n')
 
   def attack(self, other_pkm):
     if self.active_pkm.has_fainted == True:
-      print('Your pokemon has fainted.')
+      print('Your pokemon has fainted.\n')
       self.switch_pkm()
     self.active_pkm.attack(other_pkm)
 
   def switch_pkm(self):
+    global turn
     print(self.pkm_balls)
     choice = input("Choose your pokemon (1-3):\n")
     if self.active_pkm != None:
       if self.active_pkm.has_fainted == True:
         self.fainted_pkm.append(self.active_pkm)
     self.active_pkm = self.pkm_balls[int(choice)-1]
-    print(f"{self.active_pkm.name} I choose you!")
+    print(f"{self.active_pkm.name} I choose you!\n")
+    turn += 1
     
     
 
@@ -161,7 +167,10 @@ def game_function():
   print(f'{player.name}: Choose your action.\nAttack, Switch, Use Potion, Use Revive, Run')
   choice = input()
   if 'attack' in choice.lower():
-    player.attack(player.active_pkm)
+    if player == player1:
+      player.attack(player2.active_pkm)
+    elif player == player2:
+      player.attack(player1.active_pkm)
   if 'switch' in choice.lower():
     player.switch_pkm()
   if 'potion' in choice.lower():
@@ -217,7 +226,7 @@ player1.switch_pkm()
 player2.switch_pkm()
 # Start Main Game Loop
 
-while (len(player1.pkm_balls) != 1 or player1.revives != 0 )and (len(player2.pkm_balls) != 1 or player2.revives != 0):
+while (len(player1.pkm_balls) != 0 or player1.revives != 0 )and (len(player2.pkm_balls) != 0 or player2.revives != 0):
   game_function()
         
 
