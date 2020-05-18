@@ -10,16 +10,11 @@ Description: This is a program that uses OOP to simulate the basic battle struct
 
 """
 
-# TODO Create main game structure
-  # TODO Ask player for name (istantiate Trainers)
-  # TODO Display Pokemon List
-  # TODO Players choose pokemon (adds to pkm ball list)
-    # TODO removes Pokemon from list OR instantiates Pokemon
-  # TODO Choose pokeballs to create active pokemons
-  # TODO While loop based off turn number (odd = player 1, even = player 2)
-    # TODO Player chooses actions
-  # TODO End Game when player has no active pokemon in pokeball list
+# TODO End Game when player has no active pokemon in pokeball list
 # TODO Fix revive function
+# TODO Condense beginning game sequence
+# TODO Add more pokemon 
+
 
 
 
@@ -32,12 +27,13 @@ import random, sys, time
 class Pokemon:
   global turn
   
-  def __init__(self, name, level, pkm_type, max_hp, attack_range):
+  def __init__(self, name, level, pkm_type, base_hp, attack_range):
     self.name = name
     self.level = level
     self.pkm_type = pkm_type
-    self.max_hp = max_hp
-    self.current_hp = int(self.max_hp * (self.level * 0.25))
+    self.base_hp = base_hp
+    self.max_hp = int(self.base_hp * (self.level * 0.25))
+    self.current_hp = self.max_hp
     self.has_fainted = False
     self.attack_range = [(int(i *(self.level * 0.15))) for i in attack_range]
     
@@ -80,6 +76,8 @@ class Pokemon:
       attack_power = int(random.randint(self.attack_range[0], self.attack_range[1]) * self.type_mult(other_pkm))
       other_pkm.lose_health(attack_power)
       turn += 1
+    else:
+      print("Your pokemon has fainted.")
       
   def display(self):
     print(f'{self.name}, Health: {self.current_hp}\n')
@@ -98,7 +96,7 @@ class Trainer:
     self.fainted_pkm = []
     
   def add_pkm(self, pkm):
-    if self.num_of_pkballs < 2:
+    if self.num_of_pkballs < 7:
       self.pkm_balls.append(pkm)
       print(f'{pkm.name} has been added to your collection.\n')
     else:
@@ -106,42 +104,53 @@ class Trainer:
     
   def use_potion(self):
     global turn
-    if self.potions > 0:
+    if self.active_pkm.current_hp == self.active_pkm.max_hp:
+      print('Your pokemon is already at max health.\n')
+    elif self.potions > 0:
       print(f'You have given {self.active_pkm.name} a potion!\n')
       self.active_pkm.gain_health(15)
       self.potions -= 1
-      turn += 1 
-    print('You do not have any potions left.\n')
+      
+    else:
+      print('You do not have any potions left.\n')
 
   def use_revive(self):
-    # Display list of fainted pokemon
-    # Remove pokemon from fainted list, append to active list
-    # Restore 1/2 health, changed fainted status
-    # Lower revive count
-    if self.revives > 0 and pkm.current_health <= 0:
-      self.pkm.gain_health(self.pkm.max_health * 0.5)
-      self.revives -= 1
-      print(f'You have revived {pkm.name}!\n')
-    print('You do not have any revives left\n')
+    if len(self.fainted_pkm) > 0:
+      print('Which pokemon would you like to revive? (1-6)')
+      print(self.fainted_pkm)
+      choice = int(input()) - 1
+      self.active_pkm = self.fainted_pkm[choice]
+      if self.revives > 0 and pkm.current_health <= 0:
+        self.active_pkm.gain_health(self.active_pkm.max_health * 0.5)
+        self.active_pkm.has_fainted = False
+        self.fainted_pkm.remove(self.active_pkm)
+        self.revives -= 1
+        print(f'You have revived {self.active_pkm.name}!\n')
+      else:
+        print('You do not have any revives left\n')
+    elif len(self.fainted_pkm) == 0:
+      print('All of your pokemon are healthy.\n')
+    
 
   def attack(self, other_pkm):
     if self.active_pkm.has_fainted == True:
       print('Your pokemon has fainted.\n')
       self.switch_pkm()
-    self.active_pkm.attack(other_pkm)
+    else:
+      self.active_pkm.attack(other_pkm)
 
   def switch_pkm(self):
     global turn
-    print(self.pkm_balls)
+    for i in range(len(self.pkm_balls)):
+      choice = i + 1
+      print(f'{choice}: {self.pkm_balls[i]}')
     choice = input("Choose your pokemon (1-3):\n")
-    if self.active_pkm != None:
-      if self.active_pkm.has_fainted == True:
-        self.fainted_pkm.append(self.active_pkm)
-    self.active_pkm = self.pkm_balls[int(choice)-1]
-    print(f"{self.active_pkm.name} I choose you!\n")
-    turn += 1
-    
-    
+    if self.active_pkm != None or self.active_pkm == None:
+      self.active_pkm = self.pkm_balls[int(choice)-1]
+      print(f"{self.active_pkm.name} I choose you!\n")
+      print(self.active_pkm)
+      turn += 1
+      
 
   def run_away(self):
     trainer_input = input("Are you sure you want to run? (Yes or No)\n")
@@ -152,9 +161,12 @@ class Trainer:
     else:
       return None
     
-  def display_pokeballs(self):
-    pass
-    #displays list of pokemon
+  def faint_check(self):
+    if self.active_pkm.has_fainted == True:
+      self.fainted_pkm.append(self.active_pkm)
+      print('Please choose another pokemon.')
+      self.switch()
+      
 
 
 # Game Function
@@ -185,13 +197,21 @@ def game_function():
 
 
 # Pokemon Instances
+# TODO Add more pokemon
+# Remove selected pokemon from list.
 pokemon_list = []
 bulbasaur = Pokemon('Bulbasaur', random.randint(5, 10), 'grass', 50, (5, 10))
 pokemon_list.append(bulbasaur)
+bulbasaur1 = Pokemon('Bulbasaur', random.randint(5, 10), 'grass', 50, (5, 10))
+pokemon_list.append(bulbasaur1)
 charmander = Pokemon('Charmander', random.randint(5, 10), 'fire', 30, (9, 15))
 pokemon_list.append(charmander)
+charmander1 = Pokemon('Charmander', random.randint(5, 10), 'fire', 30, (9, 15))
+pokemon_list.append(charmander1)
 squirtle = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
 pokemon_list.append(squirtle)
+squirtle1 = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
+pokemon_list.append(squirtle1)
 
 
 
@@ -207,27 +227,43 @@ print('Player 2: What is your name?')
 player2_name = input()
 player1 = Trainer(player1_name)
 player2 = Trainer(player2_name)
+print('How many pokemon would you like to play with? (Max 6)')
+num_of_pkm = int(input())
+game_limit = num_of_pkm
+while num_of_pkm != 0:
 # Present pokemon choices
-print('Choose your pokemon! (numerical choice)')
-for i in range(len(pokemon_list)):
-    num = i+1
-    print(f'{num}: {pokemon_list[i]}\n')
-pkm_idx = int(input())
-player1.add_pkm(pokemon_list[pkm_idx-1])
-for i in range(len(pokemon_list)):
-    num = i+1
-    print(f'{num}: {pokemon_list[i]}\n')
-pkm_idx = int(input())
-player2.add_pkm(pokemon_list[pkm_idx-1])
+  print(f'{player1.name}, choose your pokemon! (numerical choice)')
+  for i in range(len(pokemon_list)):
+      num = i+1
+      print(f'{num}: {pokemon_list[i]}\n')
+  pkm_idx = int(input())
+  player1.add_pkm(pokemon_list[pkm_idx-1])
+  pokemon_list.remove(pokemon_list[pkm_idx-1])
+  print(f'{player2.name}, choose your pokemon! (numerical choice)')
+  for i in range(len(pokemon_list)):
+      num = i+1
+      print(f'{num}: {pokemon_list[i]}\n')
+  pkm_idx = int(input())
+  player2.add_pkm(pokemon_list[pkm_idx-1])
+  num_of_pkm -= 1
 print('Lets Battle!')
 # Ask which pokemon to battle
-print('Choose your pokemon to battle')
+print(f'{player1.name}, choose which pokemon to battle with! (numerical choice)')
 player1.switch_pkm()
+print(f'{player2.name}, choose which pokemon to battle with! (numerical choice)')
 player2.switch_pkm()
-# Start Main Game Loop
 
-while (len(player1.pkm_balls) != 0 or player1.revives != 0 )and (len(player2.pkm_balls) != 0 or player2.revives != 0):
+# Start Main Game Loop
+while (len(player1.fainted_pkm) != game_limit or player1.revives != 0 )and (len(player2.fainted_pkm) != game_limit or player2.revives != 0):
   game_function()
+  if len(player1.pkm_balls) == 0:
+    break
+    print(f'{player2.name} has won!')
+    sys.exit()
+  elif len(player2.pkm_balls) == 0:
+    break
+    print(f'{player1.name} has won!')
+    sys.exit()
         
 
 
@@ -237,15 +273,5 @@ while (len(player1.pkm_balls) != 0 or player1.revives != 0 )and (len(player2.pkm
 
 
 
-# Test
-bulbasaur.display()
-squirtle.display()
-while bulbasaur.has_fainted == False and squirtle.has_fainted == False:
-  bulbasaur.attack(squirtle)
-  squirtle.attack(bulbasaur)
- 
 
-print(bulbasaur)
-print(squirtle)
-          
 
