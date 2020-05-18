@@ -10,10 +10,10 @@ Description: This is a program that uses OOP to simulate the basic battle struct
 
 """
 
-# TODO End Game when player has no active pokemon in pokeball list
-# TODO Fix revive function
+# TODO Print end of game message.
 # TODO Condense beginning game sequence
-# TODO Add more pokemon 
+# TODO Add more pokemon
+# BUG If multiple of same pokemon, hp of one effects the other
 
 
 
@@ -49,7 +49,7 @@ class Pokemon:
       self.has_fainted = True
     return self.current_hp
 
-  def gain_health(self, health_gain):
+  def gain_hp(self, health_gain):
     global turn
     self.current_hp += health_gain
     print(f'{self.name} gained {health_gain}HP.\n{self.name} has {self.current_hp}HP.\n')
@@ -68,6 +68,7 @@ class Pokemon:
     if (self.pkm_type == 'grass' and other.pkm_type == 'fire') or (self.pkm_type == 'fire' and other.pkm_type == 'water') or (self.pkm_type == 'water' and other.pkm_type == 'grass'):
       print("It's not very effective!\n")
       return 0.5
+    return 1
 
   def attack(self, other_pkm):
     global turn
@@ -108,7 +109,7 @@ class Trainer:
       print('Your pokemon is already at max health.\n')
     elif self.potions > 0:
       print(f'You have given {self.active_pkm.name} a potion!\n')
-      self.active_pkm.gain_health(15)
+      self.active_pkm.gain_hp(15)
       self.potions -= 1
       
     else:
@@ -120,8 +121,8 @@ class Trainer:
       print(self.fainted_pkm)
       choice = int(input()) - 1
       self.active_pkm = self.fainted_pkm[choice]
-      if self.revives > 0 and pkm.current_health <= 0:
-        self.active_pkm.gain_health(self.active_pkm.max_health * 0.5)
+      if self.revives > 0 and self.active_pkm.current_hp <= 0:
+        self.active_pkm.gain_hp(self.active_pkm.max_hp * 0.5)
         self.active_pkm.has_fainted = False
         self.fainted_pkm.remove(self.active_pkm)
         self.revives -= 1
@@ -145,11 +146,11 @@ class Trainer:
       choice = i + 1
       print(f'{choice}: {self.pkm_balls[i]}')
     choice = input("Choose your pokemon (1-3):\n")
-    if self.active_pkm != None or self.active_pkm == None:
-      self.active_pkm = self.pkm_balls[int(choice)-1]
-      print(f"{self.active_pkm.name} I choose you!\n")
-      print(self.active_pkm)
-      turn += 1
+    self.active_pkm = self.pkm_balls[int(choice)-1]
+    print(f"{self.active_pkm.name} I choose you!\n")
+    print(self.active_pkm)
+    print('')
+    turn += 1
       
 
   def run_away(self):
@@ -162,10 +163,12 @@ class Trainer:
       return None
     
   def faint_check(self):
+    global turn
     if self.active_pkm.has_fainted == True:
       self.fainted_pkm.append(self.active_pkm)
-      print('Please choose another pokemon.')
-      self.switch()
+      print(f'{self.name}, please choose another pokemon.')
+      turn += 1
+      self.switch_pkm()
       
 
 
@@ -181,8 +184,10 @@ def game_function():
   if 'attack' in choice.lower():
     if player == player1:
       player.attack(player2.active_pkm)
+      player2.faint_check()
     elif player == player2:
       player.attack(player1.active_pkm)
+      player1.faint_check()
   if 'switch' in choice.lower():
     player.switch_pkm()
   if 'potion' in choice.lower():
@@ -256,14 +261,12 @@ player2.switch_pkm()
 # Start Main Game Loop
 while (len(player1.fainted_pkm) != game_limit or player1.revives != 0 )and (len(player2.fainted_pkm) != game_limit or player2.revives != 0):
   game_function()
-  if len(player1.pkm_balls) == 0:
-    break
-    print(f'{player2.name} has won!')
-    sys.exit()
-  elif len(player2.pkm_balls) == 0:
-    break
-    print(f'{player1.name} has won!')
-    sys.exit()
+if len(player1.fainted_pkm) == 0:
+  print(f'{player2.name} has won!')
+  sys.exit()
+elif len(player2.pkm_balls) == 0:
+  print(f'{player1.name} has won!')
+  sys.exit()
         
 
 
