@@ -9,11 +9,8 @@ Description: This is a program that uses OOP to simulate the basic battle struct
 
 
 """
-
-# TODO Print end of game message.
-# TODO Condense beginning game sequence
 # TODO Add more pokemon
-# BUG If multiple of same pokemon, hp of one effects the other
+# BUG If yes chosen at replay, replay function comes up after pokemon choice.
 
 
 
@@ -27,14 +24,14 @@ import random, sys, time
 class Pokemon:
   global turn
   
-  def __init__(self, name, level, pkm_type, base_hp, attack_range):
+  def __init__(self, name, level, pkm_type, base_hp, attack_range, has_fainted = False):
     self.name = name
     self.level = level
     self.pkm_type = pkm_type
     self.base_hp = base_hp
     self.max_hp = int(self.base_hp * (self.level * 0.25))
     self.current_hp = self.max_hp
-    self.has_fainted = False
+    self.has_fainted = has_fainted
     self.attack_range = [(int(i *(self.level * 0.15))) for i in attack_range]
     
 
@@ -122,7 +119,7 @@ class Trainer:
       choice = int(input()) - 1
       self.active_pkm = self.fainted_pkm[choice]
       if self.revives > 0 and self.active_pkm.current_hp <= 0:
-        self.active_pkm.gain_hp(self.active_pkm.max_hp * 0.5)
+        self.active_pkm.gain_hp(int(self.active_pkm.max_hp * 0.5))
         self.active_pkm.has_fainted = False
         self.fainted_pkm.remove(self.active_pkm)
         self.revives -= 1
@@ -146,19 +143,23 @@ class Trainer:
       choice = i + 1
       print(f'{choice}: {self.pkm_balls[i]}')
     choice = input("Choose your pokemon (1-3):\n")
+    if self.pkm_balls[int(choice)-1].current_hp < 0:
+      print("This pokemon has fainted.\nChoose another pokemon.")
+      for i in range(len(self.pkm_balls)):
+        choice = i + 1
+        print(f'{choice}: {self.pkm_balls[i]}')
+      choice = input("Choose your pokemon (1-3):\n")
     self.active_pkm = self.pkm_balls[int(choice)-1]
     print(f"{self.active_pkm.name} I choose you!\n")
     print(self.active_pkm)
     print('')
     turn += 1
       
-
   def run_away(self):
     trainer_input = input("Are you sure you want to run? (Yes or No)\n")
     if 'y' in trainer_input.lower():
       print('You have successfully run away')
-      sys.exit()
-      #replay function
+      replay()
     else:
       return None
     
@@ -166,13 +167,16 @@ class Trainer:
     global turn
     if self.active_pkm.has_fainted == True:
       self.fainted_pkm.append(self.active_pkm)
+      if len(self.fainted_pkm) == game_limit:
+        game_over()
+        replay()
       print(f'{self.name}, please choose another pokemon.')
       turn += 1
       self.switch_pkm()
       
 
 
-# Game Function
+# Game Functions
 def game_function():
   if turn % 2 != 0:
     player = player1
@@ -198,25 +202,84 @@ def game_function():
     player.run_away()
     
 
+def game_over():
+  if turn % 2 != 0:
+    print(f'{player2.name} has won!\n\n\n')
+    time.sleep(1)
+    replay()
+  else:
+    print(f'{player1.name} has won!')
+    time.sleep(1)
+    replay()
+    
+def replay():
+  global turn
+  print("Would you like to play again?")
+  choice = input()
+  if choice[:1].lower() == 'y':
+    turn = 1
+    player1.pkm_balls = []
+    player1.fainted_pkm = []
+    player1.potions = 3
+    player1.revives = 1
+    player2.pkm_balls = []
+    player2.fainted_pkm = []
+    player2.potions = 3
+    player2.revives = 1
+    pkm_init()
+    start_game()
+  else:
+    print("Thank you for playing!")
+    sys.exit()
 
-
+def start_game():
+  global game_limit
+  print('How many pokemon would you like to play with? (Max 6)')
+  num_of_pkm = int(input())
+  game_limit = num_of_pkm
+  while num_of_pkm != 0:
+  # Present pokemon choices
+    print(f'{player1.name}, choose your pokemon! (numerical choice)')
+    for i in range(len(pokemon_list)):
+        num = i+1
+        print(f'{num}: {pokemon_list[i]}\n')
+    pkm_idx = int(input())
+    player1.add_pkm(pokemon_list[pkm_idx-1])
+    pokemon_list.remove(pokemon_list[pkm_idx-1])
+    print(f'{player2.name}, choose your pokemon! (numerical choice)')
+    for i in range(len(pokemon_list)):
+        num = i+1
+        print(f'{num}: {pokemon_list[i]}\n')
+    pkm_idx = int(input())
+    player2.add_pkm(pokemon_list[pkm_idx-1])
+    pokemon_list.remove(pokemon_list[pkm_idx-1])
+    num_of_pkm -= 1
+  print('Lets Battle!')
+  # Ask which pokemon to battle
+  print(f'{player1.name}, choose which pokemon to battle with! (numerical choice)')
+  player1.switch_pkm()
+  print(f'{player2.name}, choose which pokemon to battle with! (numerical choice)')
+  player2.switch_pkm()
+        
 
 # Pokemon Instances
 # TODO Add more pokemon
 # Remove selected pokemon from list.
-pokemon_list = []
-bulbasaur = Pokemon('Bulbasaur', random.randint(5, 10), 'grass', 50, (5, 10))
-pokemon_list.append(bulbasaur)
-bulbasaur1 = Pokemon('Bulbasaur', random.randint(5, 10), 'grass', 50, (5, 10))
-pokemon_list.append(bulbasaur1)
-charmander = Pokemon('Charmander', random.randint(5, 10), 'fire', 30, (9, 15))
-pokemon_list.append(charmander)
-charmander1 = Pokemon('Charmander', random.randint(5, 10), 'fire', 30, (9, 15))
-pokemon_list.append(charmander1)
-squirtle = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
-pokemon_list.append(squirtle)
-squirtle1 = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
-pokemon_list.append(squirtle1)
+def pkm_init():
+  global pokemon_list
+  pokemon_list = []
+  bulbasaur = Pokemon('Bulbasaur', random.randint(5, 10), 'grass', 50, (5, 10))
+  pokemon_list.append(bulbasaur)
+  bulbasaur1 = Pokemon('Bulbasaur', random.randint(5, 10), 'grass', 50, (5, 10))
+  pokemon_list.append(bulbasaur1)
+  charmander = Pokemon('Charmander', random.randint(5, 10), 'fire', 30, (9, 15))
+  pokemon_list.append(charmander)
+  charmander1 = Pokemon('Charmander', random.randint(5, 10), 'fire', 30, (9, 15))
+  pokemon_list.append(charmander1)
+  squirtle = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
+  pokemon_list.append(squirtle)
+  squirtle1 = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
+  pokemon_list.append(squirtle1)
 
 
 
@@ -224,50 +287,43 @@ pokemon_list.append(squirtle1)
 
 ##### Game Sequence #####
 
+print("""
+POKEMON BATTLE SIM!
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+RULES:
+- Each player enters their name.
+- Choose the number of pokemon that you would like to play with.
+- Each player will get to choose a pokemon from the list. After a pokemon is chosen, it is removed from the list.
+- Each player will then choose which pokemon they want to battle with.
+- The player will be presented with a set of choices:
+      - Attack: Attacks the opposing players pokemon.
+      - Switch: Player can switch pokemon. A turn will be used.
+      - Use potion: Heals the pokemon by 15 HP. Each player only has 3 potions.
+      - Use revive: Revives 1 fainted pokemon, restoring 1/2 their health. Only 1 revive per player.
+      - Run: Used to run away from the battle and ends the game.
+
+- Once all of a players pokemon have fainted and their revives are used up, the game is over.
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+********LET'S BATTLE!********
+""")
+
+
 # Get player name / instantiate Trainers
 turn = 1
+pkm_init()
 print('Player 1: What is your name?')
 player1_name = input()
 print('Player 2: What is your name?')
 player2_name = input()
 player1 = Trainer(player1_name)
 player2 = Trainer(player2_name)
-print('How many pokemon would you like to play with? (Max 6)')
-num_of_pkm = int(input())
-game_limit = num_of_pkm
-while num_of_pkm != 0:
-# Present pokemon choices
-  print(f'{player1.name}, choose your pokemon! (numerical choice)')
-  for i in range(len(pokemon_list)):
-      num = i+1
-      print(f'{num}: {pokemon_list[i]}\n')
-  pkm_idx = int(input())
-  player1.add_pkm(pokemon_list[pkm_idx-1])
-  pokemon_list.remove(pokemon_list[pkm_idx-1])
-  print(f'{player2.name}, choose your pokemon! (numerical choice)')
-  for i in range(len(pokemon_list)):
-      num = i+1
-      print(f'{num}: {pokemon_list[i]}\n')
-  pkm_idx = int(input())
-  player2.add_pkm(pokemon_list[pkm_idx-1])
-  num_of_pkm -= 1
-print('Lets Battle!')
-# Ask which pokemon to battle
-print(f'{player1.name}, choose which pokemon to battle with! (numerical choice)')
-player1.switch_pkm()
-print(f'{player2.name}, choose which pokemon to battle with! (numerical choice)')
-player2.switch_pkm()
+start_game()
 
 # Start Main Game Loop
-while (len(player1.fainted_pkm) != game_limit or player1.revives != 0 )and (len(player2.fainted_pkm) != game_limit or player2.revives != 0):
+while (len(player1.fainted_pkm) != int(game_limit)) and (len(player2.fainted_pkm) != int(game_limit)):
   game_function()
-if len(player1.fainted_pkm) == 0:
-  print(f'{player2.name} has won!')
-  sys.exit()
-elif len(player2.pkm_balls) == 0:
-  print(f'{player1.name} has won!')
-  sys.exit()
-        
+
 
 
 
