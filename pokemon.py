@@ -178,6 +178,7 @@ class Trainer:
 
 # Game Functions
 def game_function():
+  global turn
   if turn % 2 != 0:
     player = player1
   else:
@@ -204,11 +205,11 @@ def game_function():
 
 def game_over():
   if turn % 2 != 0:
-    print(f'{player2.name} has won!\n\n\n')
+    print(f'{player2.name} has won!\n\n')
     time.sleep(1)
     replay()
   else:
-    print(f'{player1.name} has won!')
+    print(f'{player1.name} has won!\n\n')
     time.sleep(1)
     replay()
     
@@ -228,7 +229,7 @@ def replay():
     player2.revives = 1
     pkm_init()
     start_game()
-  else:
+  if choice.lower() == 'no':
     print("Thank you for playing!")
     sys.exit()
 
@@ -260,6 +261,9 @@ def start_game():
   player1.switch_pkm()
   print(f'{player2.name}, choose which pokemon to battle with! (numerical choice)')
   player2.switch_pkm()
+  while True:
+    game_function()
+
         
 
 # Pokemon Instances
@@ -321,8 +325,6 @@ player2 = Trainer(player2_name)
 start_game()
 
 # Start Main Game Loop
-while (len(player1.fainted_pkm) != int(game_limit)) and (len(player2.fainted_pkm) != int(game_limit)):
-  game_function()
 
 
 
