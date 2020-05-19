@@ -9,8 +9,7 @@ Description: This is a program that uses OOP to simulate the basic battle struct
 
 
 """
-# TODO Add more pokemon
-# BUG If yes chosen at replay, replay function comes up after pokemon choice.
+
 
 
 
@@ -59,7 +58,7 @@ class Pokemon:
     turn += 1
 
   def type_mult(self, other):
-    if (self.pkm_type == 'fire' and other.pkm_type == 'grass') or (self.pkm_type == 'water' and other.pkm_type == 'fire') or (self.pkm_type == 'grass' and other.pkm_type == 'water'):
+    if (self.pkm_type == 'fire' and other.pkm_type == 'grass') or (self.pkm_type == 'water' and other.pkm_type == 'fire') or (self.pkm_type == 'grass' and other.pkm_type == 'water') or (self.pkm_type == 'electric' and other.pkm_type == 'water'):
       print("It's super effective!\n")
       return 2
     if (self.pkm_type == 'grass' and other.pkm_type == 'fire') or (self.pkm_type == 'fire' and other.pkm_type == 'water') or (self.pkm_type == 'water' and other.pkm_type == 'grass'):
@@ -116,7 +115,11 @@ class Trainer:
     if len(self.fainted_pkm) > 0:
       print('Which pokemon would you like to revive? (1-6)')
       print(self.fainted_pkm)
-      choice = int(input()) - 1
+      try:
+        choice = int(input() - 1)
+      except:
+        print('Please type in a valid number. 1-9')
+        choice = int(input() - 1)
       self.active_pkm = self.fainted_pkm[choice]
       if self.revives > 0 and self.active_pkm.current_hp <= 0:
         self.active_pkm.gain_hp(int(self.active_pkm.max_hp * 0.5))
@@ -139,16 +142,33 @@ class Trainer:
 
   def switch_pkm(self):
     global turn
+    global game_limit
     for i in range(len(self.pkm_balls)):
       choice = i + 1
       print(f'{choice}: {self.pkm_balls[i]}')
-    choice = input("Choose your pokemon (1-3):\n")
-    if self.pkm_balls[int(choice)-1].current_hp < 0:
-      print("This pokemon has fainted.\nChoose another pokemon.")
-      for i in range(len(self.pkm_balls)):
-        choice = i + 1
-        print(f'{choice}: {self.pkm_balls[i]}')
-      choice = input("Choose your pokemon (1-3):\n")
+    try:
+      choice = int(input("Choose your pokemon (1-6):\n"))
+    except:
+      print('Please type in a valid number. 1-9')
+      choice = int(input("Choose your pokemon (1-6):\n"))
+    try:
+      if self.pkm_balls[int(choice)-1].current_hp < 0:
+        print("This pokemon has fainted.\nChoose another pokemon.")
+        for i in range(len(self.pkm_balls)):
+          choice = i + 1
+          print(f'{choice}: {self.pkm_balls[i]}')
+        try:
+          choice = int(input("Choose your pokemon (1-6):\n"))
+        except:
+          print('Please type in a valid number. 1-9')
+          choice = int(input("Choose your pokemon (1-6):\n"))
+    except IndexError:
+      print(f'Please type a number within 1 and {game_limit}.')
+      try:
+        choice = int(input("Choose your pokemon (1-6):\n"))
+      except:
+        print('Please type in a valid number. 1-9')
+        choice = int(input("Choose your pokemon (1-6):\n"))
     self.active_pkm = self.pkm_balls[int(choice)-1]
     print(f"{self.active_pkm.name} I choose you!\n")
     print(self.active_pkm)
@@ -206,11 +226,11 @@ def game_function():
 def game_over():
   if turn % 2 != 0:
     print(f'{player2.name} has won!\n\n')
-    time.sleep(1)
+    time.sleep(0.5)
     replay()
   else:
     print(f'{player1.name} has won!\n\n')
-    time.sleep(1)
+    time.sleep(0.5)
     replay()
     
 def replay():
@@ -236,7 +256,14 @@ def replay():
 def start_game():
   global game_limit
   print('How many pokemon would you like to play with? (Max 6)')
-  num_of_pkm = int(input())
+  try:
+    num_of_pkm = int(input())
+  except:
+    print('Please type in a valid number. 1-6')
+    num_of_pkm = int(input())
+  if 0 < num_of_pkm > 6:
+    print('Please choose a number between 1-6.')
+    num_of_pkm = int(input())
   game_limit = num_of_pkm
   while num_of_pkm != 0:
   # Present pokemon choices
@@ -244,15 +271,33 @@ def start_game():
     for i in range(len(pokemon_list)):
         num = i+1
         print(f'{num}: {pokemon_list[i]}\n')
-    pkm_idx = int(input())
-    player1.add_pkm(pokemon_list[pkm_idx-1])
+    try:
+      pkm_idx = int(input())
+    except ValueError or TypeError:
+      print('Please type in a valid number. 1-9')
+      pkm_idx = int(input())
+    try:
+      player1.add_pkm(pokemon_list[pkm_idx-1])
+    except IndexError:
+      print('Please type a number within 1 and {num_of_pkm}.')
+      pkm_idx = int(input())
+      player1.add_pkm(pokemon_list[pkm_idx-1])
     pokemon_list.remove(pokemon_list[pkm_idx-1])
     print(f'{player2.name}, choose your pokemon! (numerical choice)')
     for i in range(len(pokemon_list)):
         num = i+1
         print(f'{num}: {pokemon_list[i]}\n')
-    pkm_idx = int(input())
-    player2.add_pkm(pokemon_list[pkm_idx-1])
+    try:
+      pkm_idx = int(input())
+    except ValueError or TypeError:
+      print('Please type in a valid number. 1-9')
+      pkm_idx = int(input())
+    try:
+      player2.add_pkm(pokemon_list[pkm_idx-1])
+    except IndexError:
+      print('Please type a number within 1 and {num_of_pkm}.')
+      pkm_idx = int(input())
+      player2.add_pkm(pokemon_list[pkm_idx-1])
     pokemon_list.remove(pokemon_list[pkm_idx-1])
     num_of_pkm -= 1
   print('Lets Battle!')
@@ -284,6 +329,11 @@ def pkm_init():
   pokemon_list.append(squirtle)
   squirtle1 = Pokemon('Squirtle', random.randint(5, 10), 'water', 40, (7, 12))
   pokemon_list.append(squirtle1)
+  pikachu = Pokemon('Pikachu', random.randint(5, 10), 'electric', 35, (8, 13))
+  pokemon_list.append(pikachu)
+  pikachu1 = Pokemon('Pikachu', random.randint(5, 10), 'electric', 35, (8, 13))
+  pokemon_list.append(pikachu1)
+  
 
 
 
